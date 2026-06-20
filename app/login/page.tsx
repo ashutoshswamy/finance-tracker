@@ -25,8 +25,9 @@ export default function LoginPage() {
       await signInWithPopup(auth, googleProvider);
       router.push("/dashboard");
     } catch (err: unknown) {
+      const code = (err as { code?: string }).code ?? "";
       const message = err instanceof Error ? err.message : "Google sign-in failed";
-      toast.error(message.replace("Firebase: ", "").replace(/ \(auth\/.*\)\.?/, ""));
+      toast.error(code ? `${code}: ${message}` : message);
     } finally {
       setGoogleLoading(false);
     }
@@ -39,8 +40,9 @@ export default function LoginPage() {
       await signInWithEmailAndPassword(auth, email, password);
       router.push("/dashboard");
     } catch (err: unknown) {
+      const code = (err as { code?: string }).code ?? "";
       const message = err instanceof Error ? err.message : "Login failed";
-      toast.error(message.replace("Firebase: ", "").replace(/ \(auth\/.*\)\.?/, ""));
+      toast.error(code ? `${code}: ${message}` : message);
     } finally {
       setLoading(false);
     }
