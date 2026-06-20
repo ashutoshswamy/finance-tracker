@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
+import { useState, useEffect } from "react";
+import { signInWithEmailAndPassword, signInWithRedirect, getRedirectResult } from "firebase/auth";
 import { auth, googleProvider } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -19,16 +19,24 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
 
+  useEffect(() => {
+    getRedirectResult(auth).then((result) => {
+      if (result?.user) router.push("/dashboard");
+    }).catch((err: unknown) => {
+      const code = (err as { code?: string }).code ?? "";
+      const message = err instanceof Error ? err.message : "Google sign-in failed";
+      toast.error(code ? `${code}: ${message}` : message);
+    });
+  }, [router]);
+
   async function handleGoogleSignIn() {
     setGoogleLoading(true);
     try {
-      await signInWithPopup(auth, googleProvider);
-      router.push("/dashboard");
+      await signInWithRedirect(auth, googleProvider);
     } catch (err: unknown) {
       const code = (err as { code?: string }).code ?? "";
       const message = err instanceof Error ? err.message : "Google sign-in failed";
       toast.error(code ? `${code}: ${message}` : message);
-    } finally {
       setGoogleLoading(false);
     }
   }
